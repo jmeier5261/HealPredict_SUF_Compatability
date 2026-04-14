@@ -4,6 +4,18 @@
 
 This module provides full HealPredict integration with Shadowed Unit Frames (SUF). It renders heal prediction bars, overheal indicators, and absorb overlays directly on SUF health bars for all frame types.
 
+## Installation
+**Note:** Always back up your existing files before replacing them.
+
+1. Close World of Warcraft completely
+2. Navigate to your HealPredict addon folder:
+   `World of Warcraft/_anniversary_/Interface/AddOns/HealPredict/`
+3. Replace the following files with the ones provided:
+   - `Main/Modules/SUFCompat.lua` — the SUF compatibility module
+   - `Main/Modules/Modules.xml` — module load list (includes SUFCompat.lua)
+   - `Main/Config/Init.lua` — addon initialization (includes SUF detection and startup)
+4. Launch World of Warcraft and log in — HealPredict will auto-detect SUF and initialize
+
 ## Important: Disable SUF's Built-in Incoming Heals
 
 SUF has its own incoming heals module that will conflict with HealPredict. You must disable it:
@@ -11,7 +23,7 @@ SUF has its own incoming heals module that will conflict with HealPredict. You m
 1. Type `/suf` in chat to open Shadowed Unit Frames settings
 2. For each unit type (Player, Target, Party, Raid, etc.):
    - Navigate to the unit's settings
-   - Find **Incoming Heals** (Located under "Bars>Incoming Heals") and **disable** it by unchecking "Show incoming heals"
+   - Find **Incoming Heals** (or **incHeal**) and **disable** it
 3. This prevents two overlapping heal prediction bars on the same health bar
 
 ## Supported Frame Types
@@ -75,4 +87,3 @@ The statusbar texture is read from `ShadowUF.Layout.mediaPath.statusbar`, which 
 - `HealPredict/Main/Modules/SUFCompat.lua` — the compatibility module (full rewrite)
 - `HealPredict/Main/Config/Init.lua` — calls `InitSUFCompat()` 3 seconds after `PLAYER_ENTERING_WORLD`
 - `HealPredict/Main/Modules/Modules.xml` — loads `SUFCompat.lua`
-
