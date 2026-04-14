@@ -1,0 +1,6 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+    <Script file="Changelog.lua"/>
+    <Script file="Features.lua"/>
+    <Script file="ElvUICompat.lua"/>
+    <Script file="SUFCompat.lua"/>
+</Ui>
