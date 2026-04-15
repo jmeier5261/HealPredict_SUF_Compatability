@@ -116,6 +116,20 @@ function HP.GetSUFFrames()
         end
     end
 
+    -- Party pet frames: partypet1 – partypet5
+    frames.partypet = {}
+    for i = 1, 5 do
+        local frame = unitFrames["partypet" .. i]
+        if frame and frame.healthBar then
+            tinsert(frames.partypet, {
+                frame = frame,
+                type  = "partypet",
+                unit  = "partypet" .. i,
+                index = i,
+            })
+        end
+    end
+
     -- Raid frames: raid1 – raid40
     frames.raid = {}
     for i = 1, 40 do
@@ -130,6 +144,20 @@ function HP.GetSUFFrames()
         end
     end
 
+    -- Raid pet frames: raidpet1 – raidpet40
+    frames.raidpet = {}
+    for i = 1, 40 do
+        local frame = unitFrames["raidpet" .. i]
+        if frame and frame.healthBar then
+            tinsert(frames.raidpet, {
+                frame = frame,
+                type  = "raidpet",
+                unit  = "raidpet" .. i,
+                index = i,
+            })
+        end
+    end
+
     -- Arena frames: arena1 – arena5
     frames.arena = {}
     for i = 1, 5 do
@@ -139,6 +167,20 @@ function HP.GetSUFFrames()
                 frame = frame,
                 type  = "arena",
                 unit  = "arena" .. i,
+                index = i,
+            })
+        end
+    end
+
+    -- Arena pet frames: arenapet1 – arenapet5
+    frames.arenapet = {}
+    for i = 1, 5 do
+        local frame = unitFrames["arenapet" .. i]
+        if frame and frame.healthBar then
+            tinsert(frames.arenapet, {
+                frame = frame,
+                type  = "arenapet",
+                unit  = "arenapet" .. i,
                 index = i,
             })
         end
@@ -691,31 +733,13 @@ function HP.InitSUFCompat()
         end
     end
 
-    if frameList.party then
-        for _, frameInfo in ipairs(frameList.party) do
-            HP.SetupSUFFrame(frameInfo)
-            setupCount = setupCount + 1
-        end
-    end
-
-    if frameList.raid then
-        for _, frameInfo in ipairs(frameList.raid) do
-            HP.SetupSUFFrame(frameInfo)
-            setupCount = setupCount + 1
-        end
-    end
-
-    if frameList.arena then
-        for _, frameInfo in ipairs(frameList.arena) do
-            HP.SetupSUFFrame(frameInfo)
-            setupCount = setupCount + 1
-        end
-    end
-
-    if frameList.boss then
-        for _, frameInfo in ipairs(frameList.boss) do
-            HP.SetupSUFFrame(frameInfo)
-            setupCount = setupCount + 1
+    local groupTypes = { "party", "partypet", "raid", "raidpet", "arena", "arenapet", "boss" }
+    for _, groupType in ipairs(groupTypes) do
+        if frameList[groupType] then
+            for _, frameInfo in ipairs(frameList[groupType]) do
+                HP.SetupSUFFrame(frameInfo)
+                setupCount = setupCount + 1
+            end
         end
     end
 
@@ -764,7 +788,7 @@ function HP.RefreshSUFFrames()
     local frameList = HP.GetSUFFrames()
     if not frameList then return end
 
-    local lists = { frameList.party, frameList.raid, frameList.arena, frameList.boss }
+    local lists = { frameList.party, frameList.partypet, frameList.raid, frameList.raidpet, frameList.arena, frameList.arenapet, frameList.boss }
     for _, list in ipairs(lists) do
         if list then
             for _, frameInfo in ipairs(list) do
@@ -854,10 +878,13 @@ function HP.DebugSUFFrames()
         end
     end
 
-    print("|cff33ccffHealPredict:|r Party: " .. (frames.party and #frames.party or 0))
-    print("|cff33ccffHealPredict:|r Raid:  " .. (frames.raid  and #frames.raid  or 0))
-    print("|cff33ccffHealPredict:|r Arena: " .. (frames.arena and #frames.arena or 0))
-    print("|cff33ccffHealPredict:|r Boss:  " .. (frames.boss  and #frames.boss  or 0))
+    print("|cff33ccffHealPredict:|r Party:     " .. (frames.party    and #frames.party    or 0))
+    print("|cff33ccffHealPredict:|r PartyPet:  " .. (frames.partypet and #frames.partypet or 0))
+    print("|cff33ccffHealPredict:|r Raid:      " .. (frames.raid     and #frames.raid     or 0))
+    print("|cff33ccffHealPredict:|r RaidPet:   " .. (frames.raidpet  and #frames.raidpet  or 0))
+    print("|cff33ccffHealPredict:|r Arena:     " .. (frames.arena    and #frames.arena    or 0))
+    print("|cff33ccffHealPredict:|r ArenaPet:  " .. (frames.arenapet and #frames.arenapet or 0))
+    print("|cff33ccffHealPredict:|r Boss:      " .. (frames.boss     and #frames.boss     or 0))
 
     local count = 0
     for _, fd in pairs(HP.frameData) do
