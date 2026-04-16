@@ -1,6 +1,6 @@
 # WoW Addon Patches
 
-Custom patches and compatibility modules for World of Warcraft addons (Anniversary Edition).
+Custom patch and compatibility module for World of Warcraft (Anniversary Edition) addon [HealPredict TBC Anniversary + Classic](https://www.curseforge.com/wow/addons/healpredict-tbc-anniversary)
 
 ## HealPredict - SUF Compatibility
 
