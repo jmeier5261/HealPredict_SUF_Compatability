@@ -1971,6 +1971,26 @@ function HP.InitSUFCompat()
         end
     end
 
+    -- Watch for group roster changes so new party/raid frames are picked
+    -- up without requiring a /reload.  SUF creates header-driven frames
+    -- dynamically when the player joins a group; we need a short delay
+    -- to let SUF finish initializing the new frames before we set them up.
+    local rosterWatcher = CreateFrame("Frame")
+    rosterWatcher:RegisterEvent("GROUP_ROSTER_UPDATE")
+    rosterWatcher:RegisterEvent("GROUP_JOINED")
+    rosterWatcher:RegisterEvent("PLAYER_ENTERING_WORLD")
+    rosterWatcher:RegisterEvent("ZONE_CHANGED_NEW_AREA")
+    local pendingRefresh = false
+    rosterWatcher:SetScript("OnEvent", function()
+        if not pendingRefresh then
+            pendingRefresh = true
+            C_Timer.After(1, function()
+                pendingRefresh = false
+                HP.RefreshSUFFrames()
+            end)
+        end
+    end)
+
     -- Ticker: drive updates at ~20fps regardless of health bar events
     C_Timer.NewTicker(0.05, function()
         HP.UpdateAllSUFFrames()
