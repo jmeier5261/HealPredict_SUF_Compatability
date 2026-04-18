@@ -380,7 +380,8 @@ function HP.SetupSUFFrame(frameInfo)
     local snipeFlash = indicatorOverlay:CreateTexture(nil, "OVERLAY", nil, 5)
     snipeFlash:SetTexture("Interface\\RaidFrame\\Raid-Border")
     snipeFlash:SetAllPoints(sufFrame)
-    snipeFlash:SetVertexColor(1, 0.1, 0.1, 0)
+    snipeFlash:SetVertexColor(1, 0.1, 0.1, 1)
+    snipeFlash:SetAlpha(0)
     snipeFlash:Hide()
     local snipeAG = snipeFlash:CreateAnimationGroup()
     local snipeAlpha = snipeAG:CreateAnimation("Alpha")
@@ -719,6 +720,8 @@ function HP.UpdateSUFFrame(sufFrame)
         return
     end
 
+    local isSorted = Settings.smartOrdering
+
     -- Supplement with the native WoW API for heals from OTHER players
     -- who aren't running HealPredict.  Only compare the OTHER-heal
     -- portion — self heals can differ between API and Engine due to
@@ -729,12 +732,15 @@ function HP.UpdateSUFFrame(sufFrame)
         local apiSelf  = UnitGetIncomingHeals(unit, "player") or 0
         local apiOther = apiTotal - apiSelf
         local engineOther = ot1 + ot2
+        if isSorted then
+            -- In sorted mode my1 is otherBefore (not "my" heals).
+            -- Include it so engine-tracked heals aren't double-counted.
+            engineOther = engineOther + my1
+        end
         if apiOther > engineOther then
             ot1 = ot1 + (apiOther - engineOther)
         end
     end
-
-    local isSorted = Settings.smartOrdering
 
     -- Pick the correct color palette per frame type.
     -- SUF party/raid use the "raid" (compact) palette; single-unit frames
@@ -743,16 +749,19 @@ function HP.UpdateSUFFrame(sufFrame)
     local pal, palOH
     if isCompact then
         if isSorted then
-            pal   = { "raidOtherDirect", "raidMyDirect", "raidOtherHoT", "raidMyHoT" }
-            palOH = { "raidOtherDirectOH", "raidMyDirectOH", "raidOtherHoTOH", "raidMyHoTOH" }
+            -- Sorted slots are by timing (before/after), not heal type.
+            -- Slot 3 is other-direct heals landing after ours, not HoTs,
+            -- so use raidOtherDirect for both other-heal slots.
+            pal   = { "raidOtherDirect", "raidMyDirect", "raidOtherDirect", "raidMyHoT" }
+            palOH = { "raidOtherDirectOH", "raidMyDirectOH", "raidOtherDirectOH", "raidMyHoTOH" }
         else
             pal   = { "raidMyDirect", "raidMyHoT", "raidOtherDirect", "raidOtherHoT" }
             palOH = { "raidMyDirectOH", "raidMyHoTOH", "raidOtherDirectOH", "raidOtherHoTOH" }
         end
     else
         if isSorted then
-            pal   = { "unitOtherDirect", "unitMyDirect", "unitOtherHoT", "unitMyHoT" }
-            palOH = { "unitOtherDirectOH", "unitMyDirectOH", "unitOtherHoTOH", "unitMyHoTOH" }
+            pal   = { "unitOtherDirect", "unitMyDirect", "unitOtherDirect", "unitMyHoT" }
+            palOH = { "unitOtherDirectOH", "unitMyDirectOH", "unitOtherDirectOH", "unitMyHoTOH" }
         else
             pal   = { "unitMyDirect", "unitMyHoT", "unitOtherDirect", "unitOtherHoT" }
             palOH = { "unitMyDirectOH", "unitMyHoTOH", "unitOtherDirectOH", "unitOtherHoTOH" }
@@ -793,6 +802,39 @@ function HP.UpdateSUFFrame(sufFrame)
                     amt = mathmin(amt, mathmax(origTotal - assignedTotal, 0))
                     amounts[idx] = amt
                     assignedTotal = assignedTotal + amt
+                end
+            end
+
+            -- Fill remaining bars with API-only healers (not tracked by
+            -- HealComm).  Scan group members to find who else is healing
+            -- this target so we can show their class color.
+            if casterCount < 4 and UnitGetIncomingHeals and assignedTotal < origTotal then
+                local nextIdx = casterCount + 1
+                local engineGUIDs = {}
+                for _, hi in ipairs(casterHeals) do
+                    engineGUIDs[hi.caster] = true
+                end
+
+                local memberCount = GetNumGroupMembers() or 0
+                local prefix = IsInRaid() and "raid" or "party"
+                for i = 1, memberCount do
+                    if nextIdx > 4 then break end
+                    local mUnit = prefix .. i
+                    local mGUID = UnitGUID(mUnit)
+                    if mGUID and not engineGUIDs[mGUID] then
+                        local mHeal = UnitGetIncomingHeals(unit, mUnit)
+                        if mHeal and mHeal > 0 then
+                            local bar = fd.bars[nextIdx]
+                            if bar then
+                                local r, g, b = GetClassColor(mGUID)
+                                bar:SetVertexColor(r, g, b, opaMul * dimFactor)
+                                local amt = mathmin(mHeal, origTotal - assignedTotal)
+                                amounts[nextIdx] = amt
+                                assignedTotal = assignedTotal + amt
+                                nextIdx = nextIdx + 1
+                            end
+                        end
+                    end
                 end
             end
 
@@ -1675,6 +1717,16 @@ function HP.InitSUFCompat()
                 HP.SetupSUFFrame(frameInfo)
                 setupCount = setupCount + 1
             end
+        end
+    end
+
+    -- Hook RefreshAll: when colors or settings change at runtime, also
+    -- update SUF frames immediately so the new values are visible.
+    if HP.RefreshAll then
+        local origRefreshAll = HP.RefreshAll
+        HP.RefreshAll = function(...)
+            origRefreshAll(...)
+            HP.UpdateAllSUFFrames()
         end
     end
 
