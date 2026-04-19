@@ -1088,6 +1088,22 @@ function HP.CreateOptions()
         HP.RefreshAll()
     end)
 
+    local flipURBtn = CreateFrame("Button", "HP_BtnFlipUR", p1, "UIPanelButtonTemplate")
+    flipURBtn:SetSize(110, 20)
+    flipURBtn:SetPoint("LEFT", flipBtn, "RIGHT", 6, 0)
+    flipURBtn:SetText("Flip Unit/Raid")
+    flipURBtn:SetScript("OnClick", function()
+        HP.FlipUnitRaidColors()
+        HP.RefreshOptions()
+        HP.RefreshAll()
+    end)
+
+    BuildCheck(p1, "Use only unit colors",
+        flipBtn, "BOTTOMLEFT", 0, -6,
+        function() return Settings.useUnitColorsOnly end,
+        function(v) Settings.useUnitColorsOnly = v end,
+        "When enabled, raid and compact frames substitute the \"My/Other Unit Heals\" colors above instead of the \"My/Other Raid Heals\" colors. Useful for keeping a single color scheme across all frame types.")
+
     end -- BuildHealBarsTab
     BuildHealBarsTab(p1)
 

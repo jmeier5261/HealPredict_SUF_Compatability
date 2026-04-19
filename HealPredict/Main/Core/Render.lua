@@ -1281,8 +1281,14 @@ function HP.UpdateCompact(frame)
         return
     end
     local grad = fd.usesGradient
-    local pal = Settings.smartOrdering and COMPACT_PAL_SORTED or COMPACT_PAL
-    local palOH = Settings.smartOrdering and COMPACT_OHPL_SORTED or COMPACT_OHPL
+    local pal, palOH
+    if Settings.useUnitColorsOnly then
+        pal = Settings.smartOrdering and UNIT_PAL_SORTED or UNIT_PAL
+        palOH = Settings.smartOrdering and UNIT_OHPL_SORTED or UNIT_OHPL
+    else
+        pal = Settings.smartOrdering and COMPACT_PAL_SORTED or COMPACT_PAL
+        palOH = Settings.smartOrdering and COMPACT_OHPL_SORTED or COMPACT_OHPL
+    end
     local t1, t2, rawT = SafeRender(frame, frame.displayedUnit, overflow, grad, pal, palOH)
 
     -- Issue 4 fix: use rawTotal (unclamped) for deficit so it reflects all incoming heals

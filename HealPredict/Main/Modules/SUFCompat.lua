@@ -730,9 +730,11 @@ function HP.UpdateSUFFrame(sufFrame)
     -- Pick the correct color palette per frame type.
     -- SUF party/raid use the "raid" (compact) palette; single-unit frames
     -- use the "unit" palette.  Matches Core/Render.lua.
+    -- useUnitColorsOnly forces party/raid to use the unit palette too.
     local isCompact = (sufType == "party" or sufType == "raid")
+    local useUnitPal = (not isCompact) or Settings.useUnitColorsOnly
     local pal, palOH
-    if isCompact then
+    if not useUnitPal then
         if isSorted then
             -- Sorted slots: 1=otherBefore, 2=selfDirect, 3=otherAfter,
             -- 4=myHoT, 5=otherHoT (dedicated foreign-HoT slot so other

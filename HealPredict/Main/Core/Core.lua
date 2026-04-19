@@ -522,6 +522,7 @@ local DEFAULTS = {
     dimNonImminent    = true,
     smartOrdering     = false,
     smartOrderingClassColors = false, -- Color heal bars by caster class
+    useUnitColorsOnly = false, -- Substitute raid colors with unit colors
     fastRaidUpdate    = false,
     fastUpdateRate    = 30,
     useRaidTexture    = false,

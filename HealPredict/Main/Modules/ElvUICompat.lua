@@ -399,16 +399,45 @@ function HP.UpdateElvUIFrame(elvFrame)
     end
     ot3 = ot3 or 0
 
-    -- Use same palette as unit frames
-    local pal = Settings.smartOrdering and {
-        "myHealDirect", "myHealHot", "otherHealDirect", "otherHealHot", "otherHealHot"
-    } or {
-        "myHealTime", "myHealTime2", "otherHealTime", "otherHealTime2", "otherHealTime2"
-    }
+    -- Pick the correct color palette per frame type, mirroring Core/Render
+    -- and SUFCompat. ElvUI party/raid frames use the "raid" (compact)
+    -- palette; single-unit frames use the "unit" palette.
+    -- useUnitColorsOnly forces party/raid to use the unit palette too.
+    local elvType = fd._elvType
+    local isCompact = (elvType == "party" or elvType == "raid"
+                       or elvType == "raid40" or elvType == "raidpet")
+    local useUnitPal = (not isCompact) or Settings.useUnitColorsOnly
+    local isSorted = Settings.smartOrdering
+    local pal, palOH
+    if not useUnitPal then
+        if isSorted then
+            pal   = { "raidOtherDirect", "raidMyDirect", "raidOtherDirect", "raidMyHoT", "raidOtherHoT" }
+            palOH = { "raidOtherDirectOH", "raidMyDirectOH", "raidOtherDirectOH", "raidMyHoTOH", "raidOtherHoTOH" }
+        else
+            pal   = { "raidMyDirect", "raidMyHoT", "raidOtherDirect", "raidOtherHoT", "raidOtherHoT" }
+            palOH = { "raidMyDirectOH", "raidMyHoTOH", "raidOtherDirectOH", "raidOtherHoTOH", "raidOtherHoTOH" }
+        end
+    else
+        if isSorted then
+            pal   = { "unitOtherDirect", "unitMyDirect", "unitOtherDirect", "unitMyHoT", "unitOtherHoT" }
+            palOH = { "unitOtherDirectOH", "unitMyDirectOH", "unitOtherDirectOH", "unitMyHoTOH", "unitOtherHoTOH" }
+        else
+            pal   = { "unitMyDirect", "unitMyHoT", "unitOtherDirect", "unitOtherHoT", "unitOtherHoT" }
+            palOH = { "unitMyDirectOH", "unitMyHoTOH", "unitOtherDirectOH", "unitOtherHoTOH", "unitOtherHoTOH" }
+        end
+    end
 
     local amounts = {my1, my2, ot1, ot2, ot3}
     local colors = Settings.colors
     local opaMul = Settings.barOpacity
+
+    local activePal = pal
+    if Settings.useOverhealColors then
+        local overhealing = mathmax((hp + my1 + my2 + ot1 + ot2 + ot3) / cap - 1, 0)
+        if overhealing >= (Settings.overhealThreshold or 0) then
+            activePal = palOH
+        end
+    end
     
     -- Calculate health position
     local healthPercent = hp / cap
@@ -425,7 +454,7 @@ function HP.UpdateElvUIFrame(elvFrame)
         if not bar then return end
         
         if amount > 0 then
-            local cData = colors[pal[idx]]
+            local cData = colors[activePal[idx]]
             if cData then
                 bar:SetVertexColor(cData[1], cData[2], cData[3], cData[4] * opaMul)
             end

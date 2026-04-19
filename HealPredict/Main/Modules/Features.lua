@@ -144,6 +144,26 @@ function HP.FlipColors()
 end
 
 ---------------------------------------------------------------------------
+-- Flip unit/raid (swap raid <-> unit, preserving my/other roles)
+---------------------------------------------------------------------------
+function HP.FlipUnitRaidColors()
+    local c = Settings.colors
+    local swaps = {
+        {"raidMyDirect", "unitMyDirect"},
+        {"raidMyHoT", "unitMyHoT"},
+        {"raidMyDirectOH", "unitMyDirectOH"},
+        {"raidMyHoTOH", "unitMyHoTOH"},
+        {"raidOtherDirect", "unitOtherDirect"},
+        {"raidOtherHoT", "unitOtherHoT"},
+        {"raidOtherDirectOH", "unitOtherDirectOH"},
+        {"raidOtherHoTOH", "unitOtherHoTOH"},
+    }
+    for _, pair in ipairs(swaps) do
+        c[pair[1]], c[pair[2]] = c[pair[2]], c[pair[1]]
+    end
+end
+
+---------------------------------------------------------------------------
 -- Mana Sustainability Forecast (Feature 6)
 ---------------------------------------------------------------------------
 HP.manaHistory = {}
