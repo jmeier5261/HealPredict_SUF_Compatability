@@ -235,7 +235,8 @@ if isTBC then
     HOT_DOT_SPELLS[26980] = 3   -- Regrowth R10
     HOT_DOT_SPELLS[25292] = 3   -- Regrowth R11
     HOT_DOT_SPELLS[33763] = 4   -- Lifebloom
-    HOT_DOT_SPELLS[974]   = 5   -- Earth Shield
+    HOT_DOT_SPELLS[974]   = 5   -- Earth Shield (Rank 1)
+    HOT_DOT_SPELLS[32594] = 5   -- Earth Shield (Anniversary/TBC realm ID)
 end
 
 -- HoT spell icons for icon display mode (index -> icon texture path)
@@ -586,6 +587,11 @@ local DEFAULTS = {
     hotDotShowCooldown = true, -- Show cooldown sweep on icons
     hotDotsOffsetX     = 0,
     hotDotsOffsetY     = 0,
+    hotDotEnableRenew      = true,
+    hotDotEnableRejuv      = true,
+    hotDotEnableRegrowth   = true,
+    hotDotEnableLifebloom  = true,
+    hotDotEnableEarthShield = true,
     lowManaWarning     = false,
     lowManaThreshold   = 20,
     lowManaOffsetX     = -2,
@@ -1127,9 +1133,14 @@ function HP.ScanAuras(unit)
                 end
             end
 
-            if HOT_DOT_SPELLS[spellId] then
+            local dotSlot = HOT_DOT_SPELLS[spellId]
+            local dotTypeEnabled = dotSlot == 1 and Settings.hotDotEnableRenew ~= false
+                or dotSlot == 2 and Settings.hotDotEnableRejuv ~= false
+                or dotSlot == 3 and Settings.hotDotEnableRegrowth ~= false
+                or dotSlot == 4 and Settings.hotDotEnableLifebloom ~= false
+                or dotSlot == 5 and Settings.hotDotEnableEarthShield ~= false
+            if dotSlot and dotTypeEnabled then
                 local srcGUID = source and UnitGUID(source)
-                local dotSlot = HOT_DOT_SPELLS[spellId]
                 local exp = expirationTime or 0
                 local dur = duration or 0
                 -- Track your own HoTs (reuse existing dotInfo table)

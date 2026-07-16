@@ -1,4 +1,4 @@
-## Interface: 20505
+## Interface: 20506
 ## Title: HealPredict
 ## Notes: Heal prediction bars with full ElvUI support including textures, orientation, and custom styles.
 ## Version: 1.1.1

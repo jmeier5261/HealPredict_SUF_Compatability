@@ -698,7 +698,7 @@ function HP.CreateOptions()
     local tabScrolls = {}  -- the clip regions
     local tabButtons = {}
     local TAB_NAMES = { "Heal Bars", "Indicators", "Mana & Alerts", "General", "Analytics" }
-    local TAB_HEIGHTS = { 1400, 2800, 650, 420, 1180 }
+    local TAB_HEIGHTS = { 1400, 2950, 650, 420, 1180 }
     local CONTENT_TOP = -100  -- below title + subtitle + profile bar + tab row
 
     local function ShowTab(idx)
@@ -1878,10 +1878,44 @@ function HP.CreateOptions()
     local HOT_DOT_KEYS_OTHER = isTBC
         and { "hotDotRenewOther", "hotDotRejuvOther", "hotDotRegrowthOther", "hotDotLifebloomOther", "hotDotEarthShieldOther" }
         or  { "hotDotRenewOther", "hotDotRejuvOther", "hotDotRegrowthOther" }
+    local cbHotDotEnableRenew = BuildCheck(p2, "Track Renew",
+        cbHotDotCooldown, "BOTTOMLEFT", 0, -4,
+        function() return Settings.hotDotEnableRenew ~= false end,
+        function(v) Settings.hotDotEnableRenew = v end,
+        "Enable or disable the Renew HoT tracker dot.")
+
+    local cbHotDotEnableRejuv = BuildCheck(p2, "Track Rejuv",
+        cbHotDotEnableRenew, "BOTTOMLEFT", 0, -4,
+        function() return Settings.hotDotEnableRejuv ~= false end,
+        function(v) Settings.hotDotEnableRejuv = v end,
+        "Enable or disable the Rejuv HoT tracker dot.")
+
+    local cbHotDotEnableRegrowth = BuildCheck(p2, "Track Regrowth",
+        cbHotDotEnableRejuv, "BOTTOMLEFT", 0, -4,
+        function() return Settings.hotDotEnableRegrowth ~= false end,
+        function(v) Settings.hotDotEnableRegrowth = v end,
+        "Enable or disable the Regrowth HoT tracker dot.")
+
+    local lastHotDotEnableCheck = cbHotDotEnableRegrowth
+    if isTBC then
+        local cbHotDotEnableLifebloom = BuildCheck(p2, "Track Lifebloom",
+            cbHotDotEnableRegrowth, "BOTTOMLEFT", 0, -4,
+            function() return Settings.hotDotEnableLifebloom ~= false end,
+            function(v) Settings.hotDotEnableLifebloom = v end,
+            "Enable or disable the Lifebloom HoT tracker dot.")
+
+        local cbHotDotEnableEarthShield = BuildCheck(p2, "Track Earth Shield",
+            cbHotDotEnableLifebloom, "BOTTOMLEFT", 0, -4,
+            function() return Settings.hotDotEnableEarthShield ~= false end,
+            function(v) Settings.hotDotEnableEarthShield = v end,
+            "Enable or disable the Earth Shield HoT tracker dot.")
+
+        lastHotDotEnableCheck = cbHotDotEnableEarthShield
+    end
 
     local srHotDotOwn = BuildSwatchRow(p2, "Your HoT Dots:",
         HOT_DOT_KEYS,
-        cbHotDotCooldown, "BOTTOMLEFT", -20, -4,
+        lastHotDotEnableCheck, "BOTTOMLEFT", -20, -4,
         "Colors for your HoT tracker dots.",
         HOT_DOT_LABELS)
 
@@ -1891,7 +1925,7 @@ function HP.CreateOptions()
         "Colors for other healers' HoT dots.",
         HOT_DOT_LABELS_OTHER)
 
-    local slHotDotsX = BuildSlider(p2, "HotDotsX", -50, 50, 1,
+    local slHotDotsX = BuildSlider(p2, "HotDotsX", -100, 100, 1,
         srHotDotOther, "BOTTOMLEFT", 20, -8,
         function() return Settings.hotDotsOffsetX or 0 end,
         function(v) Settings.hotDotsOffsetX = v; if HP.ReanchorTexts then HP.ReanchorTexts() end end, "X: %d")
