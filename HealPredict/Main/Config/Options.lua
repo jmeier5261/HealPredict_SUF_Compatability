@@ -698,7 +698,7 @@ function HP.CreateOptions()
     local tabScrolls = {}  -- the clip regions
     local tabButtons = {}
     local TAB_NAMES = { "Heal Bars", "Indicators", "Mana & Alerts", "General", "Analytics" }
-    local TAB_HEIGHTS = { 1400, 2950, 650, 420, 1180 }
+    local TAB_HEIGHTS = { 1400, 3020, 650, 420, 1180 }
     local CONTENT_TOP = -100  -- below title + subtitle + profile bar + tab row
 
     local function ShowTab(idx)
@@ -1928,15 +1928,25 @@ function HP.CreateOptions()
     local slHotDotsX = BuildSlider(p2, "HotDotsX", -100, 100, 1,
         srHotDotOther, "BOTTOMLEFT", 20, -8,
         function() return Settings.hotDotsOffsetX or 0 end,
-        function(v) Settings.hotDotsOffsetX = v; if HP.ReanchorTexts then HP.ReanchorTexts() end end, "X: %d")
+        function(v) Settings.hotDotsOffsetX = v; if HP.ReanchorTexts then HP.ReanchorTexts() end end, "Party/Raid X: %d")
 
     local slHotDotsY = BuildSlider(p2, "HotDotsY", -30, 30, 1,
         slHotDotsX, "BOTTOMLEFT", 0, -18,
         function() return Settings.hotDotsOffsetY or 0 end,
-        function(v) Settings.hotDotsOffsetY = v; if HP.ReanchorTexts then HP.ReanchorTexts() end end, "Y: %d")
+        function(v) Settings.hotDotsOffsetY = v; if HP.ReanchorTexts then HP.ReanchorTexts() end end, "Party/Raid Y: %d")
+
+    local slHotDotsXUnit = BuildSlider(p2, "HotDotsXUnit", -100, 100, 1,
+        slHotDotsY, "BOTTOMLEFT", 0, -18,
+        function() return Settings.hotDotsOffsetXUnit or 0 end,
+        function(v) Settings.hotDotsOffsetXUnit = v; if HP.ReanchorTexts then HP.ReanchorTexts() end end, "Unit Frames X: %d")
+
+    local slHotDotsYUnit = BuildSlider(p2, "HotDotsYUnit", -30, 30, 1,
+        slHotDotsXUnit, "BOTTOMLEFT", 0, -18,
+        function() return Settings.hotDotsOffsetYUnit or 0 end,
+        function(v) Settings.hotDotsOffsetYUnit = v; if HP.ReanchorTexts then HP.ReanchorTexts() end end, "Unit Frames Y: %d")
 
     --------------- Section: Charmed/Possessed ---------------
-    local secCharmed = DrawSection(p2, "CHARMED / POSSESSED", slHotDotsY, "BOTTOMLEFT", -20, -10)
+    local secCharmed = DrawSection(p2, "CHARMED / POSSESSED", slHotDotsYUnit, "BOTTOMLEFT", -20, -10)
 
     local cbCharmed = BuildCheck(p2, "Charmed/Possessed indicator",
         secCharmed, "BOTTOMLEFT", 0, -6,

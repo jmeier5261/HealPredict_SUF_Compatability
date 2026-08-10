@@ -276,6 +276,15 @@ local HOT_DOT_ANCHORS = {
 }
 local HOT_DOT_POS_LABELS = { "Bottom-Left", "Bottom-Right", "Top-Left", "Top-Right" }
 
+-- Solo unit frames (player/target/tot/focus/pet) are much smaller than
+-- party/raid frames, so they get their own offset setting rather than
+-- sharing hotDotsOffsetX/Y (a value tuned for a wide raid frame can push
+-- dots well past the edge of a tiny frame like target-of-target).
+local SOLO_UNIT_FRAME_TYPES = {
+    player = true, target = true, tot = true, targettarget = true,
+    focus = true, pet = true,
+}
+
 -- Defensive display anchors: { anchorPoint, relPoint, offsetX, offsetY, justifyH }
 local DEFENSE_ANCHORS = {
     { "CENTER",       "CENTER",       0,  0, "CENTER" },
@@ -301,8 +310,15 @@ local function ApplyDotAnchors(fd)
     -- Calculate row offset based on size
     local rowOffset = size + 2  -- Small gap between rows
     
-    local ox = Settings.hotDotsOffsetX or 0
-    local oy = Settings.hotDotsOffsetY or 0
+    local isSoloUnit = SOLO_UNIT_FRAME_TYPES[fd.frameType] or SOLO_UNIT_FRAME_TYPES[fd._sufType]
+    local ox, oy
+    if isSoloUnit then
+        ox = Settings.hotDotsOffsetXUnit or 0
+        oy = Settings.hotDotsOffsetYUnit or 0
+    else
+        ox = Settings.hotDotsOffsetX or 0
+        oy = Settings.hotDotsOffsetY or 0
+    end
 
     -- Position own HoT dots (5 dots)
     for di = 1, 5 do
