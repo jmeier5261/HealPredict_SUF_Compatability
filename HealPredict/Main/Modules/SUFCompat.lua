@@ -14,6 +14,7 @@ local pairs = pairs
 local ipairs = ipairs
 local UnitGUID = UnitGUID
 local UnitExists = UnitExists
+local UnitIsDeadOrGhost = UnitIsDeadOrGhost
 local UnitClass = UnitClass
 local GetPlayerInfoByGUID = GetPlayerInfoByGUID
 local GetTime = GetTime
@@ -1103,6 +1104,18 @@ function HP.UpdateSUFFrame(sufFrame)
     -- Positioned at the left edge of the health endpoint, growing inward.
     -- ----------------------------------------------------------------
     local guid = unit and UnitGUID(unit)
+    -- Dead units shouldn't keep showing stale aura-based borders (charm, dispel,
+    -- defensives) — these caches are only refreshed on UNIT_AURA, which may not
+    -- fire again once the unit dies, so gate display on liveness directly.
+    -- We also proactively wipe the cached entries while dead so a stale "true"
+    -- doesn't flash back up the instant the unit is resurrected, before the
+    -- next UNIT_AURA scan has a chance to overwrite it.
+    local isDead = unit and UnitIsDeadOrGhost(unit)
+    if isDead and guid then
+        HP.charmedGUIDs[guid] = nil
+        HP.dispelGUIDs[guid] = nil
+        HP.defenseGUIDs[guid] = nil
+    end
     if fd.absorbBar then
         local showAbsorb = Settings.showAbsorbBar and guid and HP.shieldGUIDs and HP.shieldGUIDs[guid]
         if showAbsorb and cap > 0 and barW > 0 then
@@ -1298,7 +1311,7 @@ function HP.UpdateSUFFrame(sufFrame)
 
     -- Dispel highlight
     if fd.dispelOverlay then
-        if Settings.dispelHighlight and guid and HP.dispelGUIDs[guid] then
+        if Settings.dispelHighlight and not isDead and guid and HP.dispelGUIDs[guid] then
             local dType = HP.dispelGUIDs[guid]
             local dc = Settings.colors["dispel" .. dType]
             if dc then
@@ -1505,7 +1518,7 @@ function HP.UpdateSUFFrame(sufFrame)
 
     -- Border effect (separate from icon/text display)
     if borderStyle > 1 and fd.effects and fd.effects.defensive then
-        local hasDef = Settings.showDefensives and guid and HP.defenseGUIDs[guid]
+        local hasDef = Settings.showDefensives and not isDead and guid and HP.defenseGUIDs[guid]
 
         if hasDef then
             local def = HP.defenseGUIDs[guid]
@@ -1536,7 +1549,7 @@ function HP.UpdateSUFFrame(sufFrame)
 
     -- Icon/text container mode
     if fd.defensiveContainer and fd.defensiveIcon and fd.defensiveText then
-        if Settings.showDefensives and guid then
+        if Settings.showDefensives and not isDead and guid then
             local def = HP.defenseGUIDs[guid]
 
             if def then
@@ -1622,7 +1635,7 @@ function HP.UpdateSUFFrame(sufFrame)
     -- directly as a fallback so charmed detection always works on SUF
     -- frames regardless of which other features are enabled.
     if fd.effects and fd.effects.charmed then
-        if Settings.showCharmed and unit then
+        if Settings.showCharmed and not isDead and unit then
             local showCharmed = (guid and HP.charmedGUIDs[guid])
                              or UnitIsCharmed(unit)
 

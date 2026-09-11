@@ -215,6 +215,18 @@ local function onCastStart(unit, cast, spellID)
     end
     if not castGUID or not castUnit then return end
 
+    -- Once castGUID/castUnit are resolved, this cast attempt owns the cache
+    -- slots for spellID — clear them on every exit path from here on so a
+    -- failed calculation never leaves a stale (possibly high-priority) GUID
+    -- sitting in castTargets[0]/[spellID], silently misattributing or
+    -- blocking the next cast of this spell on a different target.
+    local function clearCastTarget()
+        castTargets[spellID] = nil
+        castPriority[spellID] = nil
+        castTargets[0] = nil
+        castPriority[0] = nil
+    end
+
     -- Calculate the heal
     local CalculateHeal = Engine.CalculateHeal
     local GetTargets = Engine.GetTargets
@@ -222,15 +234,15 @@ local function onCastStart(unit, cast, spellID)
 
     local healType, amount, numTicks, tickInterval
     healType, amount, numTicks, tickInterval = CalculateHeal(castGUID, spellID, castUnit)
-    if not amount then return end
+    if not amount then clearCastTarget(); return end
 
     -- Get targets (multi-target for PoH, Binding Heal, etc.)
     local targets = GetTargets(healType, castGUID, spellID, amount)
-    if not targets then return end
+    if not targets then clearCastTarget(); return end
 
     if healType == DIRECT then
         local startMs, endMs = select(4, CastingInfo())
-        if not startMs or not endMs then return end
+        if not startMs or not endMs then clearCastTarget(); return end
         local dur = (endMs - startMs) / 1000
         parseDirect(myGUID, spellID, amount, dur, strsplit(",", targets))
         sendWire(strformat("D:%.3f:%d:%d:%s", dur, spellID, amount, targets))
@@ -247,11 +259,7 @@ local function onCastStart(unit, cast, spellID)
         Engine.callbacks:Fire("HealComm_HealStarted", myGUID, spellID, CHANNEL, GetTime() + numTicks * (tickInterval or 1), decompressTargets(targets))
     end
 
-    -- Clear cast target (both exact spellID and wildcard 0)
-    castTargets[spellID] = nil
-    castPriority[spellID] = nil
-    castTargets[0] = nil
-    castPriority[0] = nil
+    clearCastTarget()
 end
 
 local function onCastStop(unit, cast, spellID, interrupted)
@@ -762,6 +770,10 @@ end
 ---------------------------------------------------------------------------
 -- Expose on Engine table for Init.lua
 ---------------------------------------------------------------------------
+-- castTargets/castPriority are diagnostic-only exposures (for /hp debug) so
+-- a stuck cast-target slot can actually be observed instead of guessed at.
+Engine.castTargets     = castTargets
+Engine.castPriority    = castPriority
 Engine.setCastTarget   = setCastTarget
 Engine.onCastSent      = onCastSent
 Engine.onCastStart     = onCastStart

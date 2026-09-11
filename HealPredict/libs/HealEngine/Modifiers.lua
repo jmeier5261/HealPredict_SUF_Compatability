@@ -66,8 +66,6 @@ local HEAL_MODS = {
     [19283] = 0.80, [19284] = 0.80, [25470] = 0.80,
     -- Curse of the Bleeding Hollow
     [34073] = 0.85,
-    -- Carrion Swarm
-    [31306] = 0.25,
     -- Magic Dampening Field (SWP)
     [44475] = 0.25,
     -- Brood Affliction: Green (BWL)
@@ -126,6 +124,7 @@ local PLAYER_DEBUFF_IDS = {
     [40099] = 0.50,  -- Vile Slime
     [38246] = 0.50,  -- Vile Sludge
     [45573] = 0.50,  -- Vile Sludge (variant)
+    [31306] = 0.25,  -- Carrion Swarm (Anetheron, Mount Hyjal) — reduces the afflicted player's own healing done, not healing received
 }
 
 ---------------------------------------------------------------------------

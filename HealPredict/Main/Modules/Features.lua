@@ -1205,6 +1205,28 @@ function HP.DebugTarget()
     local othersAmt = Engine:GetOthersHealAmount(guid, Engine.ALL_HEALS) or 0
     print(fmt("  Engine: self=%.0f  others=%.0f  mod=%.2f", selfAmt, othersAmt, mod))
 
+    -- Cast-target cache: is any spellID's slot stuck pointing at this GUID,
+    -- or (more relevant if THIS is the target you're currently trying to
+    -- heal) at some OTHER GUID, silently blocking your cast from landing here?
+    if Engine.castTargets then
+        local ownLines, otherStuck = {}, 0
+        for spellID, tgtGUID in pairs(Engine.castTargets) do
+            local prio = Engine.castPriority and Engine.castPriority[spellID]
+            if tgtGUID == guid then
+                tinsert(ownLines, fmt("    spellID=%s prio=%s", tostring(spellID), tostring(prio)))
+            else
+                otherStuck = otherStuck + 1
+            end
+        end
+        if #ownLines > 0 then
+            print("  |cffff8844[Cast-target cache pointing HERE]|r")
+            for _, line in ipairs(ownLines) do print(line) end
+        end
+        if otherStuck > 0 then
+            print(fmt("  |cffff8844[Cast-target cache]|r %d slot(s) pointing at OTHER guids (normal if you just cast on them)", otherStuck))
+        end
+    end
+
     -- Ticking records
     local tickCount = 0
     if Engine.ticking then

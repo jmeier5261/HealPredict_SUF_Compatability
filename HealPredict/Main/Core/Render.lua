@@ -1339,6 +1339,18 @@ function HP.UpdateCompact(frame)
     -- Healer count per target
     local unit = frame.displayedUnit
     local guid = unit and UnitGUID(unit)
+    -- Dead units shouldn't keep showing stale aura-based borders (charm, dispel,
+    -- defensives) — these caches are only refreshed on UNIT_AURA, which may not
+    -- fire again once the unit dies, so gate display on liveness directly.
+    -- We also proactively wipe the cached entries while dead so a stale "true"
+    -- doesn't flash back up the instant the unit is resurrected, before the
+    -- next UNIT_AURA scan has a chance to overwrite it.
+    local isDead = unit and UnitIsDeadOrGhost(unit)
+    if isDead and guid then
+        HP.charmedGUIDs[guid] = nil
+        dispelGUIDs[guid] = nil
+        defenseGUIDs[guid] = nil
+    end
     if fd.healerCountText then
         if Settings.healerCount then
             local hCount = guid and Engine:GetActiveCasterCount(guid) or 0
@@ -1423,7 +1435,7 @@ function HP.UpdateCompact(frame)
 
     -- Dispel highlight
     if fd.dispelOverlay then
-        if Settings.dispelHighlight and guid and dispelGUIDs[guid] then
+        if Settings.dispelHighlight and not isDead and guid and dispelGUIDs[guid] then
             local dType = dispelGUIDs[guid]
             local dc = Settings.colors["dispel" .. dType]
             if dc then
@@ -1674,7 +1686,7 @@ function HP.UpdateCompact(frame)
     -- Border effect (separate from icon/text display)
     -- borderStyle: 1=No effect, 2=Static, 3=Glow, 4=Spinning, 5=Slashes
     if borderStyle > 1 and fd.effects and fd.effects.defensive then
-        local hasDef = Settings.showDefensives and guid and defenseGUIDs[guid]
+        local hasDef = Settings.showDefensives and not isDead and guid and defenseGUIDs[guid]
         
         -- Test mode: show defensive border on frame 1
         if not hasDef and Settings.showDefensives and HP._testMode and fd._isTestFrame and ((fd._testFrameIndex or 0) % 8 == 1) then
@@ -1715,14 +1727,14 @@ function HP.UpdateCompact(frame)
     
     -- Icon/text container mode
     if fd.defensiveContainer and fd.defensiveIcon and fd.defensiveText then
-        local showDef = Settings.showDefensives and guid and defenseGUIDs[guid]
-        
+        local showDef = Settings.showDefensives and not isDead and guid and defenseGUIDs[guid]
+
         -- Test mode: show defensive on frame 1
         if not showDef and Settings.showDefensives and HP._testMode and fd._isTestFrame and ((fd._testFrameIndex or 0) % 8 == 1) then
             showDef = true
         end
-        
-        if Settings.showDefensives and (guid or (HP._testMode and fd._isTestFrame)) then
+
+        if Settings.showDefensives and not isDead and (guid or (HP._testMode and fd._isTestFrame)) then
             local def = defenseGUIDs[guid]
             
             -- Test mode: mock defensive data
@@ -1809,7 +1821,7 @@ function HP.UpdateCompact(frame)
 
     -- Charmed/Mind-controlled indicator
     if fd.effects and fd.effects.charmed then
-        if Settings.showCharmed and guid then
+        if Settings.showCharmed and not isDead and guid then
             local showCharmed = HP.charmedGUIDs[guid]
             
             -- Test mode: show charmed indicator on frame 2
