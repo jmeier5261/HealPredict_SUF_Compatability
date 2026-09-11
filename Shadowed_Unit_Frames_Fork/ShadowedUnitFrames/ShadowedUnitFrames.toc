@@ -1,0 +1,61 @@
+## Interface: 20506
+## Title: Shadowed Unit Frames
+## Notes: Highly customizable unit frames for your character, party, raid, and more.
+## Author: Shadowed / TwILeK
+## IconTexture: Interface\Icons\Spell_Shadow_Shadowfiend
+## Version: 6.0.0
+## SavedVariables: ShadowedUFDB, ShadowedUFLocale
+## X-Website: https://legacy.curseforge.com/wow/addons/shadowed-unit-frames-tbc-anniversary
+## OptionalDeps: Ace3, LibSharedMedia-3.0, AceGUI-3.0-SharedMediaWidgets, LibSpellRange-1.0, Clique
+## X-Curse-Project-ID: 1432720
+## X-WoWI-ID: 13494
+
+#@no-lib-strip@
+libs\LibStub\LibStub.lua
+libs\CallbackHandler-1.0\CallbackHandler-1.0.xml
+libs\LibSharedMedia-3.0\lib.xml
+libs\AceDB-3.0\AceDB-3.0.xml
+libs\LibSpellRange-1.0\lib.xml
+#@end-no-lib-strip@
+
+localization\enUS.lua
+localization\huHU.lua
+localization\deDE.lua
+localization\esES.lua
+localization\esMX.lua
+localization\frFR.lua
+localization\koKR.lua
+localization\ptBR.lua
+localization\ruRU.lua
+localization\zhCN.lua
+localization\zhTW.lua
+
+ExternalAPI.lua
+Constants.lua
+ShadowedUnitFrames.xml
+ShadowedUnitFrames.lua
+modules\helpers.lua
+modules\units.lua
+modules\layout.lua
+modules\movers.lua
+modules\defaultlayout.lua
+modules\highlight.lua
+modules\tags.lua
+modules\health.lua
+modules\power.lua
+modules\portrait.lua
+modules\indicators.lua
+modules\incheal.lua
+modules\xp.lua
+modules\cast.lua
+modules\auras.lua
+modules\auraindicators.lua
+modules\combattext.lua
+modules\totems.lua
+modules\fader.lua
+modules\basecombopoints.lua
+modules\combopoints.lua
+modules\range.lua
+modules\empty.lua
+modules\druid.lua
+modules\runes.lua

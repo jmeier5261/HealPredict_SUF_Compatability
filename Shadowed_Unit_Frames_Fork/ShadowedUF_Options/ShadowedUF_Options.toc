@@ -1,0 +1,17 @@
+## Interface: 20506
+## Title: Shadowed UF (Options)
+## Notes: Configuration for Shadowed Unit Frames.
+## Author: Shadowed / TwILeK
+## IconTexture: Interface\Icons\Spell_Shadow_Shadowfiend
+## Version: 6.0.0
+## LoadOnDemand: true
+## Dependencies: ShadowedUnitFrames
+
+#@no-lib-strip@
+libs\AceDBOptions-3.0\AceDBOptions-3.0.xml
+libs\AceGUI-3.0\AceGUI-3.0.xml
+libs\AceGUI-3.0-SharedMediaWidgets\widget.xml
+libs\AceConfig-3.0\AceConfig-3.0.xml
+#@end-no-lib-strip@
+
+config.lua
